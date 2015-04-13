@@ -1,7 +1,46 @@
-<canvas id="map" width="500" height="500"></canvas>
-
-<div id="info" onclick="document.getElementById('info').style.display = 'none';">
-Q / E to zoom<br>
-WASD to pan<br>
-or use the mouse
-</div>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <title>Novato | Map</title>
+        <script src='planeMap.js'></script>
+        <style>
+            html,body{margin:0;overflow:hidden;background:#252525;color:#ddd;font-family:Helvetica,sans-serif;}
+            #map{
+                z-index:1;
+                position:absolute;
+                top:0;
+                bottom:0;
+                left:0;
+                right:0;
+                margin:auto;
+                cursor:move;
+                background:#222;
+                box-shadow: 0 0 20px 3px rgba(0,0,0,.6);
+            }
+            #upcoming{
+                z-index:0;
+                position:fixed;
+                bottom:0px;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="map" width="500" height="500">
+            No canvas support
+        </canvas>
+        <div id="upcoming">
+            <ul>
+                <b>To Do:</b>
+                <li>Click for details</li>
+                <li>Drag to pan</li>
+                <li><strike>Scroll to scale</strike></li>
+                <li><strike>Center Cluster</strike></li>
+                <li><strike>Color Coded</strike></li>
+                <li><strike>Draw Points</strike></li>
+                <li><strike>Draw Grid</strike></li>
+                <li><strike>Resize canvas</strike></li>
+            </ul>
+        </div>
+    </body>
+</html>
