@@ -5,6 +5,12 @@
         <title>Novato | Map</title>
         <script src='planeMap.js'></script>
         <style>
+            *{
+                -moz-user-select: -moz-none;
+                -khtml-user-select: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
             html,body{margin:0;overflow:hidden;background:#252525;color:#ddd;font-family:Helvetica,sans-serif;}
             #map{
                 z-index:1;
@@ -14,9 +20,21 @@
                 left:0;
                 right:0;
                 margin:auto;
-                cursor:move;
+                cursor:default;
                 background:#222;
                 box-shadow: 0 0 20px 3px rgba(0,0,0,.6);
+            }
+            #info{
+                margin:5px;
+                z-index:1;
+                opacity:.2;
+                position:fixed;
+                right:0px;
+                cursor:pointer;
+                transition: all .3s ease 0s;
+            }
+            #info:hover{
+                opacity:.8;
             }
         </style>
     </head>
@@ -24,5 +42,15 @@
         <canvas id="map" width="500" height="500">
             No canvas support
         </canvas>
+        <div id="info" onclick="document.getElementById('info').style.display = 'none';">
+            <b>Controls:</b><br>
+            +zoom : Z / Q / spacebar <br>
+            -zoom &nbsp: X / E / backspace  <br>
+            pan : WASD / arrow keys <br>
+            <b>Mouse:</b><br>
+            drag to pan<br>
+            scroll to zoom<br>
+            <b><u>CLOSE<u></b>
+        </div>
     </body>
 </html>
