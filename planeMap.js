@@ -6,10 +6,11 @@ window.onload = function(){
 	
     var max = 0;
     var sca = 3000,
-        scaMax = 5000,
-        scaMin = 1400;
+        scaMax = 6000,
+        scaMin = 1000,
+		border;
     var f_colorsArray = new Array();
-    var colors = ['#ff4733','#ffde5c','#33ffad','#85a9ff','#ce0aff','#ffadc6','#beff5c','#5cffff','#6c5cff','#f385ff','#ff335c','#ff9d0a','#daffd6','#0aceff','#f7d6ff','#ff0a9d'];
+    var colors = ['#ff4733','#ffde5c','#33ffad','#85a9ff','#ce0aff','#ffadc6','#beff5c','#5cffff','#6c5cff','#f385ff','#ff335c','#ff9d0a','#daffd6','#0aceff','#ad96b2','#ff0a9d'];
     var cenX,cenZ;
 	var maxX,maxZ;
 	var minX,minZ;
@@ -26,13 +27,16 @@ window.onload = function(){
 	cluster();
 		
     function zoom(d){
+		var ttx=tranX/(max/sca);
+		var ttz=tranZ/(max/sca);
         if(d<0 && sca<scaMax){sca+=200;}
         else if(d>0 && sca>scaMin){sca-=200;}
-/*		var rect = canvas.getBoundingClientRect();
+		var rect = canvas.getBoundingClientRect();
 		var tx = mouseX-rect.left-max/2+otranX;
-		var ty = mouseY-rect.top -max/2+otranZ;*/
-		tranX=tranX;
-		tranZ=tranZ;
+		var ty = mouseY-rect.top -max/2+otranZ;
+		tranX=scale(ttx);
+		tranZ=scale(ttz);
+		//a/(max/sca);
 		translate();
     }
 
@@ -59,10 +63,16 @@ window.onload = function(){
 			moveY = mouseY - e.clientY;
 			mouseX = e.clientX;
 			mouseY = e.clientY;
-			tranX += moveX;
-			tranZ += moveY;
+			var tx=tranX/(max/sca);
+			var tz=tranZ/(max/sca);
+			var mx=moveX/(max/sca);
+			var mz=moveY/(max/sca);
+			if(Math.abs(tx+mx)<border){tranX += moveX;}
+			if(Math.abs(tz+mz)<border){tranZ += moveY;}
 			translate();
 		}
+		mouseX = e.clientX;
+		mouseY = e.clientY;
 		testf(e);
 	}
 	
@@ -70,14 +80,13 @@ window.onload = function(){
 		var rect = canvas.getBoundingClientRect();
 		var tx = e.clientX-rect.left-max/2+otranX;
 		var ty = e.clientY-rect.top -max/2+otranZ;
-		test=Math.round(tx)+','+Math.round(ty);
+		test=Math.round(tx/(max/sca))+','+Math.round(ty/(max/sca));
 		m.fillStyle = '#000';
 		for(var i=0;i<pointsArray.length;i++){
-            var name    = pointsArray[i][0];
             var x       = scale(pointsArray[i][2]);
             var z       = scale(pointsArray[i][3]);
 			if (Math.abs(x-tx)<15 && Math.abs(z-ty)<15){
-				test=name;
+				test=i;
 			}
 		}
 		redraw();
@@ -111,7 +120,7 @@ window.onload = function(){
 	}
 	
     function initialize(){
-        //window.addEventListener('resize',resizeCanvas,false);
+        window.addEventListener('resize',resizeCanvas,false);
 		document.onkeydown = checkKey;
 		if (canvas.addEventListener){
 			canvas.addEventListener('mousewheel',handleScroll,false);
@@ -124,12 +133,17 @@ window.onload = function(){
     }
 
     function resizeCanvas(){
+		var mm = max;
+		var tx = tranX/(max/sca);
+		var tz = tranZ/(max/sca);
         max = Math.min(window.innerWidth,window.innerHeight);
         canvas.width=max;
         canvas.height=max;
-		otranX=tranX+max/2;
-        otranZ=tranZ+max/2;
-		translate();
+		mm=max-mm;
+		
+		m.translate(-tranX+max/2,-tranZ+max/2);
+		
+		redraw();
     }
 
     function assignColors(){
@@ -210,14 +224,14 @@ window.onload = function(){
         //draw the grid of guidelines
         function drawGrid(){
             //grid settings
-			var span = Math.round(Math.max(maxX-cenX,minX-cenX,maxZ-cenZ,minZ-cenZ)/1000)*2000+500;//width of grid scales to furthest point
+			border = Math.round(Math.max(maxX-cenX,minX-cenX,maxZ-cenZ,minZ-cenZ)/1000)*2000+500;//width of grid scales to furthest point
             var light = 100; //space between lines in scale units
             var dark = 5;    //how often to draw a dark line
 			
-			var len = scale(span); //
+			var len = scale(border); //
 			
             //draw grid
-            for(var i=1;i<=span/light;i=i+1){
+            for(var i=1;i<=border/light;i=i+1){
                 var dis = scale(i*light); //space grid lines from origin
                 
                 m.lineWidth=1;m.strokeStyle='#0f0f0f';
@@ -249,12 +263,12 @@ window.onload = function(){
 			m.fill();
 			
 //DEBUG/////transform center
-			m.beginPath();
-			m.strokeStyle='green';
-			m.lineWidth = 6;
-			m.strokeRect(tranX,tranZ,1,1);
-			m.closePath();
-			m.stroke();
+			//m.beginPath();
+			//m.strokeStyle='white';
+			//m.lineWidth = 1;
+			//m.strokeRect(tranX,tranZ,1,1);
+			//m.closePath();
+			//m.stroke();
         }
 		
         //draws static items
@@ -267,16 +281,16 @@ window.onload = function(){
 
 			//draw compass
             m.fillStyle = '#ddd';
-            m.fillText('+ X  (East)',max-75,max/2);
-            m.fillText('- X  (West)',8,max/2);
-            m.fillText('- Z  (North)',max/2,20);
-            m.fillText('+ Z  (South)',max/2,max-10);
+            m.fillText('+ X  (East)',max-75,max/2+4);
+            m.fillText('- X  (West)',8,max/2+4);
+            m.fillText('- Z  (North)',max/2-40,20);
+            m.fillText('+ Z  (South)',max/2-40,max-10);
 			m.fill();
 			
 //DEBUG/////draw static canvas center
 			m.beginPath();
-			m.strokeStyle='red';
-			m.lineWidth = 3;
+			m.strokeStyle='#ccc';
+			m.lineWidth = 1;
 			m.strokeRect(max/2,max/2,1,1);
 			m.closePath();
 			m.stroke();
@@ -287,12 +301,12 @@ window.onload = function(){
             m.fill();
 			
 			//draw test vars
-			m.fillText('a: '+otranX,max/2,max-120);
-			m.fillText('b: '+tranX,max/2,max-100);
-			m.fillText('c: '+'',max/2,max-80);
-			m.fillText('d: '+'',max/2,max-60);
-			m.fillText(test,max/2,max-40);
-			m.fill();
+			//m.fillText('tranXs: '+tranX/(max/sca),max/2,max-120);
+			//m.fillText('tranX: '+tranX,max/2,max-100);
+			//m.fillText('c: '+mouseX*(max/sca),max/2,max-80);
+			//m.fillText('d: '+mouseX,max/2,max-60);
+			//m.fillText(test,max/2,max-40);
+			//m.fill();
 			
 			//draw key
 			var pos = 15;
@@ -324,19 +338,41 @@ window.onload = function(){
                 var x       = pointsArray[i][2];
                 var z       = pointsArray[i][3];
 
+                if(founder===''){founder='Unknown';}
                 m.beginPath();
                 m.strokeStyle=color;
                 m.strokeRect(scale(x),scale(z),1,1);
-                m.fillText(x+','+z,scale(x)+8,scale(z)+5);m.fill();
+                //m.fillText(x+','+z,scale(x)+8,scale(z)+5);m.fill();
 //DEBUG/////////draw canvas coordinate under each point
-				m.fillText(Math.round(scale(x))+','+Math.round(scale(z)),scale(x)+8,scale(z)+25);m.fill();
+				//m.fillText(Math.round(scale(x))+','+Math.round(scale(z)),scale(x)+8,scale(z)+25);m.fill();
 
                 m.closePath();m.stroke();
+				
+				if(test===i){
+					m.fillText(x+','+z,scale(x)+8,scale(z)+5);m.fill();
+					var rect = canvas.getBoundingClientRect();
+					var tx = mouseX-rect.left-max/2+otranX;
+					var ty = mouseY-rect.top -max/2+otranZ;
+                    var nw = m.measureText(name).width;
+                    var fw = m.measureText(founder).width;
+                    var tw = Math.max(nw,fw);
+                    
+					m.beginPath();
+                	m.strokeStyle='rgba(100,100,100,.5)';
+                	m.strokeRect(tx,ty+20,tw+20,42);
+					m.fillStyle='rgba(200,200,200,.8)';
+                	m.fillRect(tx,ty+20,tw+20,42);m.fill();
+					
+					m.fillStyle='#111';
+                	m.fillText(name,tx+10,ty+35);
+					m.fillText(founder,tx+10,ty+55);
+                	m.fill();m.closePath();m.stroke();
+				}
             }
         }
 
 //DEBUG/draw center of point-cluster
-        m.strokeStyle='#fff';
+        m.strokeStyle='#444';
         m.lineWidth = 1;
         m.strokeRect(scale(cenX),scale(cenZ),1,1);
         m.stroke();
